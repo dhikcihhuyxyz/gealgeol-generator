@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  `${window.location.protocol}//${window.location.hostname}:8000`;
 const CHECK_STATUS_COOLDOWN_SECONDS = 60;
 const ACCESS_SESSION_KEY = "gealgeol_dashboard_unlocked";
 const WHATSAPP_CONTACT_URL =
