@@ -160,6 +160,44 @@ function formatTime(totalSeconds) {
   )}`;
 }
 
+function maskSecret(value) {
+  if (!value) return "";
+
+  const text = String(value).trim();
+
+  if (text.length <= 8) {
+    return "*".repeat(text.length);
+  }
+
+  return `${text.slice(0, 4)}${"*".repeat(Math.min(text.length - 8, 18))}${text.slice(-4)}`;
+}
+
+function parseResponseText(responseText) {
+  if (!responseText) return null;
+
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    return {
+      raw_text: responseText,
+    };
+  }
+}
+
+function buildNetworkErrorLog(error) {
+  return {
+    message: error?.message || "Failed to fetch",
+    name: error?.name || "NetworkError",
+    possible_causes: [
+      "Backend tidak bisa dihubungi",
+      "CORS menolak request dari domain frontend",
+      "URL backend salah atau env VITE_API_BASE_URL belum sesuai",
+      "Koneksi internet bermasalah",
+      "Vercel function backend sedang error atau cold start",
+    ],
+  };
+}
+
 function extractVideoUrlFromAny(data) {
   if (!data) return "";
 
@@ -632,6 +670,8 @@ function Dashboard({ onLogout }) {
   const [checkCooldown, setCheckCooldown] = useState(0);
   const [checkingStatus, setCheckingStatus] = useState(false);
   const [lastCheckedAt, setLastCheckedAt] = useState("");
+  const [httpLog, setHttpLog] = useState(null);
+  const [showHttpLog, setShowHttpLog] = useState(false);
 
   const platformModelOptions = useMemo(() => {
     return MODEL_OPTIONS.filter((item) => item.platform === platform);
@@ -724,6 +764,8 @@ function Dashboard({ onLogout }) {
     setCheckCooldown(0);
     setCheckingStatus(false);
     setLastCheckedAt("");
+    setHttpLog(null);
+    setShowHttpLog(false);
   }
 
   function resetForm() {
@@ -749,6 +791,8 @@ function Dashboard({ onLogout }) {
     setCheckCooldown(0);
     setCheckingStatus(false);
     setLastCheckedAt("");
+    setHttpLog(null);
+    setShowHttpLog(false);
   }
 
   function stopPolling() {
@@ -874,6 +918,25 @@ function Dashboard({ onLogout }) {
       return;
     }
 
+    const requestLog = {
+      type: "check_status",
+      started_at: new Date().toISOString(),
+      request: {
+        url: `${API_BASE_URL}/video/status`,
+        method: "POST",
+        payload: {
+          model,
+          task_id: currentTaskId,
+          api_key: maskSecret(apiKey),
+        },
+      },
+    };
+
+    setHttpLog({
+      ...requestLog,
+      status: "requesting",
+    });
+    setShowHttpLog(false);
     setError("");
     setCheckingStatus(true);
     setCheckCooldown(CHECK_STATUS_COOLDOWN_SECONDS);
@@ -892,9 +955,22 @@ function Dashboard({ onLogout }) {
         }),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      const data = parseResponseText(responseText);
       const finalVideoUrl = extractVideoUrlFromAny(data);
       const checkedTime = new Date().toLocaleTimeString();
+
+      setHttpLog({
+        ...requestLog,
+        ended_at: new Date().toISOString(),
+        status: response.ok ? "success_response" : "failed_response",
+        response: {
+          ok: response.ok,
+          status: response.status,
+          status_text: response.statusText,
+          data,
+        },
+      });
 
       setLastCheckedAt(checkedTime);
       setCheckCount((value) => value + 1);
@@ -952,6 +1028,17 @@ function Dashboard({ onLogout }) {
         return;
       }
 
+      setHttpLog((current) => {
+        if (current?.response) return current;
+
+        return {
+          ...requestLog,
+          ended_at: new Date().toISOString(),
+          status: "network_error",
+          network_error: buildNetworkErrorLog(err),
+        };
+      });
+
       setError(err.message || "Terjadi error saat check status.");
       setProcessStatus("failed");
     } finally {
@@ -967,6 +1054,8 @@ function Dashboard({ onLogout }) {
     setTaskId("");
     setCheckCount(0);
     setShowDebug(false);
+    setShowHttpLog(false);
+    setHttpLog(null);
     setElapsedSeconds(0);
     setCheckCooldown(0);
     setCheckingStatus(false);
@@ -978,6 +1067,42 @@ function Dashboard({ onLogout }) {
       setError(validationError);
       return;
     }
+
+    const requestLog = {
+      type: "generate",
+      started_at: new Date().toISOString(),
+      request: {
+        url: `${API_BASE_URL}/video/generate`,
+        method: "POST",
+        payload: {
+          platform,
+          model,
+          duration: safeDuration,
+          aspect_ratio: aspectRatio,
+          prompt,
+          photo: photo
+            ? {
+                name: photo.name,
+                size: photo.size,
+                type: photo.type,
+              }
+            : null,
+          video: video
+            ? {
+                name: video.name,
+                size: video.size,
+                type: video.type,
+              }
+            : null,
+          api_key: maskSecret(apiKey),
+        },
+      },
+    };
+
+    setHttpLog({
+      ...requestLog,
+      status: "requesting",
+    });
 
     const formData = new FormData();
     formData.append("platform", platform);
@@ -1004,9 +1129,22 @@ function Dashboard({ onLogout }) {
         body: formData,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      const data = parseResponseText(responseText);
       const returnedTaskId = data?.data?.task_id;
       const returnedVideoUrl = extractVideoUrlFromAny(data);
+
+      setHttpLog({
+        ...requestLog,
+        ended_at: new Date().toISOString(),
+        status: response.ok ? "success_response" : "failed_response",
+        response: {
+          ok: response.ok,
+          status: response.status,
+          status_text: response.statusText,
+          data,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(getReadableError(data, response.status));
@@ -1045,6 +1183,17 @@ function Dashboard({ onLogout }) {
         setCheckingStatus(false);
         return;
       }
+
+      setHttpLog((current) => {
+        if (current?.response) return current;
+
+        return {
+          ...requestLog,
+          ended_at: new Date().toISOString(),
+          status: "network_error",
+          network_error: buildNetworkErrorLog(err),
+        };
+      });
 
       setError(err.message || "Terjadi error saat generate.");
       setProcessStatus("failed");
@@ -1573,7 +1722,7 @@ function Dashboard({ onLogout }) {
                 </div>
               </div>
 
-              {generateResult && (
+              {(generateResult || httpLog) && (
                 <div className="debug-panel">
                   <button
                     type="button"
@@ -1583,13 +1732,31 @@ function Dashboard({ onLogout }) {
                     {showDebug ? "Sembunyikan Debug JSON" : "Lihat Debug JSON"}
                   </button>
 
+                  {httpLog && (
+                    <button
+                      type="button"
+                      className="debug-toggle"
+                      onClick={() => setShowHttpLog((value) => !value)}
+                    >
+                      {showHttpLog
+                        ? "Sembunyikan HTTP Log"
+                        : "Lihat HTTP Log"}
+                    </button>
+                  )}
+
                   {showDebug && (
                     <pre className="debug-result">
                       {JSON.stringify(
-                        generateResult.data || generateResult,
+                        generateResult?.data || generateResult || {},
                         null,
                         2
                       )}
+                    </pre>
+                  )}
+
+                  {showHttpLog && httpLog && (
+                    <pre className="debug-result">
+                      {JSON.stringify(httpLog, null, 2)}
                     </pre>
                   )}
                 </div>
