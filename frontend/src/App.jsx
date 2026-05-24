@@ -253,6 +253,210 @@ function extractVideoUrlFromAny(data) {
   return "";
 }
 
+function MarketingPage({ onOpenAccess }) {
+  return (
+    <main className="app marketing-app">
+      <section className="marketing-shell">
+        <header className="marketing-hero">
+          <div className="marketing-hero-content">
+            <p className="eyebrow">GealGeol Generator</p>
+            <h1>Private AI Video Generator untuk Magnific AI & KIE AI</h1>
+            <p>
+              Dashboard private untuk membantu proses generate video AI dari
+              foto dan video reference. Dibuat ringan, simple, mobile friendly,
+              dan tidak menyimpan API key maupun hasil generate di database.
+            </p>
+
+            <div className="marketing-actions">
+              <button
+                className="marketing-primary-btn"
+                type="button"
+                onClick={onOpenAccess}
+              >
+                Masuk Dashboard
+              </button>
+
+              <a
+                href={WHATSAPP_CONTACT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="marketing-secondary-link"
+              >
+                <SocialIcon type="whatsapp" />
+                Hubungi WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <div className="marketing-hero-card">
+            <div className="marketing-card-glow" />
+            <div className="marketing-preview-top">
+              <span />
+              AI Video Workspace
+            </div>
+
+            <div className="marketing-preview-body">
+              <div>
+                <small>Recommended Model</small>
+                <strong>Kling 2.6 Motion Control Pro</strong>
+              </div>
+
+              <div>
+                <small>Platform</small>
+                <strong>Magnific AI + KIE AI</strong>
+              </div>
+
+              <div>
+                <small>Mode</small>
+                <strong>Foto + Video Reference</strong>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section className="marketing-grid">
+          <div className="marketing-info-card">
+            <span className="marketing-icon">🎬</span>
+            <h2>Image to Video</h2>
+            <p>
+              Upload foto sumber, pilih model, lalu generate menjadi video AI.
+              Cocok untuk konten karakter, visual promosi, dan eksperimen AI.
+            </p>
+          </div>
+
+          <div className="marketing-info-card">
+            <span className="marketing-icon">🕺</span>
+            <h2>Motion Control</h2>
+            <p>
+              Gunakan video reference untuk membantu arah gerakan karakter.
+              Mode ini cocok untuk gerakan dance, walk, pose, dan motion style.
+            </p>
+          </div>
+
+          <div className="marketing-info-card">
+            <span className="marketing-icon">⏱️</span>
+            <h2>Manual Check Status</h2>
+            <p>
+              Check status dibuat manual dengan cooldown supaya request tidak
+              numpuk dan lebih aman dari rate limit provider.
+            </p>
+          </div>
+
+          <div className="marketing-info-card">
+            <span className="marketing-icon">🔐</span>
+            <h2>Private Access</h2>
+            <p>
+              Dashboard hanya bisa dibuka menggunakan access code. API key dan
+              hasil generate tidak disimpan di database.
+            </p>
+          </div>
+        </section>
+
+        <section className="marketing-recommendation">
+          <div className="marketing-section-heading">
+            <p className="eyebrow">Recommended Setup</p>
+            <h2>Untuk hasil awal, gunakan Magnific Kling 2.6 Motion Control Pro</h2>
+            <p>
+              Model ini direkomendasikan karena mendukung foto sumber dan video
+              reference, sehingga lebih cocok untuk generate gerakan berbasis
+              motion.
+            </p>
+          </div>
+
+          <div className="recommendation-list">
+            <div>
+              <span>1</span>
+              <strong>Platform</strong>
+              <p>Pilih Magnific AI untuk percobaan utama.</p>
+            </div>
+
+            <div>
+              <span>2</span>
+              <strong>Model</strong>
+              <p>Pakai Kling 2.6 Motion Control Pro sebagai model recommended.</p>
+            </div>
+
+            <div>
+              <span>3</span>
+              <strong>Durasi</strong>
+              <p>Mulai dari 5 sampai 10 detik dulu untuk test awal.</p>
+            </div>
+
+            <div>
+              <span>4</span>
+              <strong>File</strong>
+              <p>Upload foto sumber dan video reference agar motion control aktif.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="marketing-tutorial">
+          <div className="marketing-section-heading">
+            <p className="eyebrow">Tutorial Magnific</p>
+            <h2>Cara penggunaan singkat</h2>
+            <p>
+              Ikuti langkah berikut supaya proses generate lebih aman dan tidak
+              membingungkan.
+            </p>
+          </div>
+
+          <div className="tutorial-steps">
+            <div>
+              <b>01</b>
+              <p>Masukkan API key Magnific yang masih aktif.</p>
+            </div>
+
+            <div>
+              <b>02</b>
+              <p>Pilih model Kling 2.6 Motion Control Pro.</p>
+            </div>
+
+            <div>
+              <b>03</b>
+              <p>Upload foto sumber yang ingin digerakkan.</p>
+            </div>
+
+            <div>
+              <b>04</b>
+              <p>Upload video reference untuk contoh gerakan.</p>
+            </div>
+
+            <div>
+              <b>05</b>
+              <p>Klik Generate Video dan tunggu sampai task ID muncul.</p>
+            </div>
+
+            <div>
+              <b>06</b>
+              <p>Klik Refresh / Check Status manual setiap cooldown selesai.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="marketing-warning">
+          <div>
+            <strong>Catatan penting</strong>
+            <p>
+              Pastikan API key provider aktif dan saldo/limit mencukupi. Jika
+              muncul 401 berarti API key salah atau expired. Jika muncul 429
+              berarti provider sedang membatasi request. Jika status completed
+              tetapi video belum muncul, klik check status lagi setelah cooldown.
+            </p>
+          </div>
+
+          <button
+            className="marketing-primary-btn"
+            type="button"
+            onClick={onOpenAccess}
+          >
+            Lanjut Masuk Dashboard
+          </button>
+        </section>
+      </section>
+    </main>
+  );
+}
+
 function AccessGate({ onUnlock }) {
   const [accessCode, setAccessCode] = useState("");
   const [agreeWarning, setAgreeWarning] = useState(false);
@@ -1402,6 +1606,11 @@ function App() {
   const [isUnlocked, setIsUnlocked] = useState(() => {
     return sessionStorage.getItem(ACCESS_SESSION_KEY) === "true";
   });
+  const [showAccessGate, setShowAccessGate] = useState(false);
+
+  if (!isUnlocked && !showAccessGate) {
+    return <MarketingPage onOpenAccess={() => setShowAccessGate(true)} />;
+  }
 
   if (!isUnlocked) {
     return <AccessGate onUnlock={() => setIsUnlocked(true)} />;
